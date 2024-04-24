@@ -6,36 +6,45 @@ def main(page: ft.Page):
     t = ft.Text(value="Enter Shipment Number", color="cyan", size=33)
     page.controls.append(t)
     text_field1 = ft.TextField(label="Enter Shipment Number")
+    text_field2a = ft.TextField(label="Enter Product")
+    text_field2b = ft.TextField(label="Enter Quantity")
 
     def btn_text1_clicked(self):
         t.value = "Entered Shipment Number: " + text_field1.value
         text_field1.visible = False
         btn_text1.visible = False
-        page.add(btn_text2)
+        ft.Text(value="Enter Product and Quantity")
+        new_task.visible = True
+        btn_text2.visible = True
         page.update()
-
-    text_field2a = ft.TextField(label="Enter Product")
-    text_field2b = ft.TextField(label="Enter Quantity")
-
-    def btn_text2_clicked(self):
-        btn_text2.visible = False
-        page.add(ft.Row(controls=[text_field2a, text_field2b, btn_text3]))
-
-    def btn_text3_clicked(self):
-        print(text_field2a, text_field2b)
-        page.add(ft.Row(controls=[text_field2a, text_field2b, btn_text3]))
 
     btn_text1 = ft.ElevatedButton(
         text="Enter Shipment Number", on_click=btn_text1_clicked
     )
-    btn_text2 = ft.ElevatedButton(
-        text="Enter Product Details", on_click=btn_text2_clicked
-    )
-    btn_text3 = ft.ElevatedButton(text="Add another", on_click=btn_text3_clicked)
 
     page.add(ft.Row(controls=[text_field1, btn_text1]))
 
-    # page.add(ft.ElevatedButton("Enter Product Details", on_click=text_field2))
+    def add_clicked(e):
+        page.add(
+            ft.Text(
+                value="Product: "
+                + text_field2a.value
+                + "     Quantity:"
+                + text_field2b.value
+            )
+        )
+        new_task.value = ""
+        print(text_field2a.value, text_field2b.value)
+        page.update()
+
+    new_task = ft.Row(controls=[text_field2a, text_field2b], visible=False)
+
+    btn_text2 = ft.ElevatedButton(
+        text="Enter Product and Quantity", on_click=add_clicked, visible=False
+    )
+
+    page.add(ft.Row(controls=[new_task, btn_text2]))
+
     page.update()
 
 
