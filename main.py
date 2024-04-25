@@ -1,5 +1,6 @@
 import flet as ft
 import sqlite3
+import datetime
 
 
 def main(page: ft.Page):
@@ -7,6 +8,11 @@ def main(page: ft.Page):
     cursor = connection.cursor()
     cursor.execute(
         "CREATE TABLE IF NOT EXISTS GOODS_RECEIPT (ASN TEXT, PRODUCT TEXT, QUANTITY INTEGER)"
+    )
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS AUDIT 
+        (TIME_STAMP INT, TRANS_DATE STRING, TRANS_TIME STRING, TRANS_TYPE TEXT, TRANS_SUBTYPE TEXT, 
+        REASON_CODE TEXT, REFERENCE TEXT, PRODUCT TEXT, QUANTITY INTEGER)"""
     )
 
     page.adaptive = True
@@ -34,7 +40,12 @@ def main(page: ft.Page):
     )
 
     btn_text3 = ft.ElevatedButton(
-        text="Close Session", on_click=close_window, visible=False
+        text="Close Session",
+        on_click=close_window,
+        icon="close",
+        icon_color="red",
+        color="red",
+        visible=False,
     )
 
     page.add(ft.Row(controls=[text_field1, btn_text1]))
@@ -51,6 +62,21 @@ def main(page: ft.Page):
         entry = (text_field1.value, text_field2a.value, text_field2b.value)
         new_task.value = ""
         cursor.execute("INSERT INTO GOODS_RECEIPT VALUES (?, ?, ?)", entry)
+        connection.commit()
+        audit_entry = (
+            int(datetime.datetime.now().strftime("%Y%m%d%H%M%S")),
+            datetime.datetime.now().strftime("%d-%m-%Y"),
+            datetime.datetime.now().strftime("%H:%M:%S"),
+            "RECEIPT",
+            "",
+            "",
+            text_field1.value,
+            text_field2a.value,
+            text_field2b.value,
+        )
+        cursor.execute(
+            "INSERT INTO AUDIT VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", audit_entry
+        )
         connection.commit()
         page.update()
 
