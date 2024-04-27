@@ -40,6 +40,11 @@ def main(page: ft.Page):
     )
 
     # Test Data: This data should come from reading an XML batch which comes from a queue
+    # cursor.execute("INSERT INTO SHIPMENT_INBOUND VALUES ('0001','PRQS', '1234', 10, 0)")
+    # connection.commit
+    #
+    # cursor.execute("INSERT INTO SHIPMENT_INBOUND VALUES ('0001','ABCD', '1234', 10, 0)")
+    # connection.commit
 
     page.adaptive = True
     t = ft.Text(value="Enter Shipment Number", color="cyan", size=33)
