@@ -1,6 +1,7 @@
 import flet as ft
 import sqlite3
 import datetime
+from tablecreate import create_tables
 
 # What's Pending?
 # 1. SHIPMENT_INBOUND's Actual Receipt is not getting updated
@@ -10,41 +11,12 @@ import datetime
 def main(page: ft.Page):
 
     SITE = "0001"
-    # Define tables - SHIPMENT_INBOUND, GOODS_RECEIPT, AUDIT, PRODUCT_QTY - Extend the logic to include site.
+    # Initiate the cursor
     connection = sqlite3.connect("wms.db", check_same_thread=False)
     cursor = connection.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS SHIPMENT_INBOUND 
-        (SITE TEXT NOT NULL, ASN TEXT NOT NULL, PRODUCT TEXT NOT NULL, QUANTITY INTEGER DEFAULT 0, QUANTITY_RECEIVED INTEGER DEFAULT 0,
-        CONSTRAINT PK_SHP_INB PRIMARY KEY (SITE, ASN, PRODUCT))
-        """
-    )
-    cursor.execute(
-        """CREATE TABLE IF NOT EXISTS GOODS_RECEIPT 
-        (SITE TEXT NOT NULL, ASN TEXT NOT NULL, PRODUCT TEXT NOT NULL, QUANTITY INTEGER DEFAULT 0)
-        """
-    )
-    cursor.execute(
-        """CREATE TABLE IF NOT EXISTS AUDIT 
-        (TIME_STAMP INT, TRANS_DATE TEXT, TRANS_TIME TEXT, SITE TEXT, TRANS_TYPE TEXT, TRANS_SUBTYPE TEXT, 
-        REASON_CODE TEXT, REFERENCE TEXT, PRODUCT TEXT, QUANTITY INTEGER)
-        """
-    )
-    cursor.execute(
-        """CREATE TABLE IF NOT EXISTS PRODUCT_QTY 
-        (SITE TEXT NOT NULL, PRODUCT TEXT NOT NULL, QUANTITY_AVAILABLE INTEGER DEFAULT 0, QUANTITY_QUALITY INTEGER DEFAULT 0, 
-        QUANTITY_ORDERED INTEGER DEFAULT 0, QUANTITY_PICKED INTEGER DEFAULT 0, QUANTITY_TO_DESPATCH INTEGER DEFAULT 0,
-        CONSTRAINT PRODUCT_QTY_PRIMARY PRIMARY KEY (SITE, PRODUCT))
-        """
-    )
 
-    # Test Data: This data should come from reading an XML batch which comes from a queue
-    # cursor.execute("INSERT INTO SHIPMENT_INBOUND VALUES ('0001','PRQS', '1234', 10, 0)")
-    # connection.commit
-    #
-    # cursor.execute("INSERT INTO SHIPMENT_INBOUND VALUES ('0001','ABCD', '1234', 10, 0)")
-    # connection.commit
+    # Create Tables
+    create_tables()
 
     page.adaptive = True
     t = ft.Text(value="Enter Shipment Number", color="cyan", size=33)
@@ -94,13 +66,25 @@ def main(page: ft.Page):
         new_task.value = ""
         cursor.execute("INSERT INTO GOODS_RECEIPT VALUES (?, ?, ?, ?)", entry)
         connection.commit()
+
+        nonadvcheck_entry = (SITE, text_field1.value, text_field2a.value)
+
+        nonadvcheck = cursor.execute(
+            "SELECT *  FROM SHIPMENT_INBOUND WHERE SITE = ? AND ASN = ? AND PRODUCT = ?",
+            nonadvcheck_entry,
+        )
+        if cursor.fetchone() is not None:
+            receipt_subtype = ""
+        else:
+            receipt_subtype = "RECEIPTNONADV"
+
         audit_entry = (
             int(datetime.datetime.now().strftime("%Y%m%d%H%M%S")),
             datetime.datetime.now().strftime("%d-%m-%Y"),
             datetime.datetime.now().strftime("%H:%M:%S"),
             SITE,
             "RECEIPT",
-            "",
+            receipt_subtype,
             "",
             text_field1.value,
             text_field2a.value,
