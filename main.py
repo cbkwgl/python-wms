@@ -1,67 +1,67 @@
 import flet as ft
 
 
-def main(page: ft.Page):
+def main(page):
+    page.adaptive = True
+    t = ft.Text(value="Quality Check", color="cyan", size=33)
+    page.controls.append(t)
 
-    functions = [
-        ("Storage", "Storage Clicked"),
-        ("Picking", "Picking Clicked"),
-        ("Packing", "Packing Clicked"),
-        ("Slotting", "Slotting Clicked"),
-        ("Despatch", "Despatch Clicked"),
-        ("Adjustments", "Adjustments Clicked"),
-        ("Ordering", "Ordering Clicked"),
-        ("Order Confirmation", "Order Confirmation Clicked"),
-        ("Loading", "Loading Clicked"),
-        ("Receiving", "Receiving Clicked"),
-    ]
+    # Pending -> Unlock, New Line, Table Data
 
-    page.title = "Warehouse Management System"
-    page.padding = 50
-    page.update()
-
-    page.appbar = ft.AppBar(
-        actions=[
-            ft.IconButton(
-                ft.icons.HOME,
-                icon_color=ft.colors.BLUE_800,
-                icon_size=60,
-                tooltip="Home Page",
-                on_click=lambda _: page.go("/"),
-            ),
-        ],
-    )
-
-    images = ft.GridView(
-        expand=1,
-        runs_count=5,
-        max_extent=350,
-        child_aspect_ratio=1.0,
-        spacing=5,
-        run_spacing=5,
-    )
-
-    page.add(images)
-
-    def button_clicked(e):
-        for label, message in functions:
-            if label == e.control.content.value:
-                print(message)
-
-    for i in range(0, len(functions)):
-        images.controls.append(
-            ft.TextButton(
-                content=ft.Text(functions[i - 1][0], size=40),
-                on_click=button_clicked,
-                style=ft.ButtonStyle(
-                    shape=ft.RoundedRectangleBorder(
-                        radius=20,
-                    ),
-                    bgcolor=ft.colors.BLUE_50,
-                ),
+    def btn_text1_clicked(e):
+        if text_field2a.value + text_field1.value == "":
+            pass
+        elif text_field2a.value == "":
+            page.add(
+                ft.Text(
+                    value="ASN/Slot: "
+                    + text_field1.value
+                    + " Reason: "
+                    + text_field3.value
+                )
             )
-        )
-    page.update()
+        elif text_field1.value == "":
+            page.add(
+                ft.Text(
+                    value="Product: "
+                    + text_field2a.value
+                    + " Quantity: "
+                    + text_field2b.value
+                    + " Reason: "
+                    + text_field3.value
+                )
+            )
+
+    text_field1 = ft.TextField(label="Enter Reference")
+    text_field2a = ft.TextField(label="Enter Product")
+    text_field2b = ft.TextField(label="Enter Quantity")
+    text_field3 = ft.TextField(label="Enter Reason")
+    btn_text1 = ft.ElevatedButton(text="Confirm", on_click=btn_text1_clicked)
+
+    def radiogroup_changed(e):
+        cg.visible = False
+        if e.control.value == "Product":
+            page.add(
+                ft.Row(controls=[text_field2a, text_field2b, text_field3, btn_text1])
+            )
+        if e.control.value in ("ASN", "Slot"):
+            page.add(ft.Row(controls=[text_field1, text_field3, btn_text1]))
+
+        page.update()
+
+    t = ft.Text()
+    cg = ft.RadioGroup(
+        content=ft.Row(
+            [
+                ft.Radio(value="Product", label="Product"),
+                ft.Radio(value="ASN", label="ASN"),
+                ft.Radio(value="Slot", label="Slot"),
+            ]
+        ),
+        on_change=radiogroup_changed,
+    )
+
+    page.add(cg)
 
 
 ft.app(target=main)
